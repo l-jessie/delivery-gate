@@ -1,0 +1,8 @@
+node_modules/
+runs/
+plans/
+.openclaw/
+*.log
+*.tgz
+.DS_Store
+.idea

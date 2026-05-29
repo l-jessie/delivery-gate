@@ -1,0 +1,155 @@
+{
+  "id": "delivery-gate",
+  "name": "Delivery Gate",
+  "version": "0.7.0",
+  "description": "Runtime delivery reflection gate with evidence scoring, oracle comparison, changed-lines traceability, enforced autonomous long-task recovery, native high-risk approvals, privacy-aware ledgers, retained project-local plans, and bounded final revision.",
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "observe",
+          "revise"
+        ],
+        "default": "revise"
+      },
+      "injectPrompt": {
+        "type": "boolean",
+        "default": true
+      },
+      "strictTools": {
+        "type": "boolean",
+        "default": true
+      },
+      "midRunReflection": {
+        "type": "boolean",
+        "default": true
+      },
+      "semanticReview": {
+        "type": "boolean",
+        "default": true
+      },
+      "longTaskMode": {
+        "type": "boolean",
+        "default": true
+      },
+      "skillHints": {
+        "type": "boolean",
+        "default": true
+      },
+      "implicitPlanFiles": {
+        "type": "boolean",
+        "default": true
+      },
+      "projectPlanFiles": {
+        "type": "boolean",
+        "default": true
+      },
+      "cleanupPlanOnSuccess": {
+        "type": "boolean",
+        "default": false
+      },
+      "persistLedger": {
+        "type": "boolean",
+        "default": true
+      },
+      "ledgerPromptMode": {
+        "type": "string",
+        "enum": [
+          "none",
+          "redacted",
+          "full"
+        ],
+        "default": "redacted"
+      },
+      "maxLedgerBytes": {
+        "type": "integer",
+        "minimum": 10000,
+        "maximum": 5000000,
+        "default": 1000000
+      },
+      "retentionDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365,
+        "default": 30
+      },
+      "reviewerMode": {
+        "type": "string",
+        "enum": [
+          "rules",
+          "llm",
+          "hybrid"
+        ],
+        "default": "rules"
+      },
+      "codingStrict": {
+        "type": "boolean",
+        "default": true
+      },
+      "blockHighRiskTools": {
+        "type": "boolean",
+        "default": true
+      },
+      "milestoneReflectionEveryTools": {
+        "type": "integer",
+        "minimum": 3,
+        "maximum": 20,
+        "default": 5
+      },
+      "failureBudget": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 3
+      },
+      "maxRevisionAttempts": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3,
+        "default": 1
+      },
+      "debug": {
+        "type": "boolean",
+        "default": false
+      },
+      "approvalMode": {
+        "type": "string",
+        "enum": [
+          "approval",
+          "block"
+        ],
+        "default": "approval"
+      },
+      "autonomousRecovery": {
+        "type": "boolean",
+        "default": true
+      },
+      "enforceAutonomousRecovery": {
+        "type": "boolean",
+        "default": true
+      },
+      "evidenceScoring": {
+        "type": "boolean",
+        "default": true
+      },
+      "oracleStrict": {
+        "type": "boolean",
+        "default": true
+      },
+      "changedLinesReview": {
+        "type": "boolean",
+        "default": true
+      }
+    }
+  }
+}

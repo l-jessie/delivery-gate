@@ -1,0 +1,29 @@
+{
+  "name": "openclaw-delivery-gate-local",
+  "version": "0.7.0",
+  "type": "module",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "smoke": "node test/smoke.mjs",
+    "unit": "node test/unit.mjs",
+    "hook-sim": "node test/hook-sim.mjs",
+    "test": "npm run smoke && npm run unit && npm run hook-sim",
+    "test:all": "npm test"
+  },
+  "dependencies": {},
+  "description": "OpenClaw delivery quality gate plugin",
+  "peerDependencies": {
+    "openclaw": ">=2026.5.27"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    }
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ]
+  }
+}
