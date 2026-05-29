@@ -4,7 +4,7 @@
 
 Ah... this is a transitional delivery-gate plugin for OpenClaw. No half-baked work. No bullshit.
 
-Runtime delivery-quality plugin for OpenClaw agents. It adds dynamic task policies, bounded final-answer revision, evidence scoring, oracle comparison, changed-lines traceability, native approval requests for high-risk actions, enforced autonomous long-task recovery, long-task ledgers, retained project plans, and coding closure checks.
+Runtime delivery-quality plugin for OpenClaw agents. It adds dynamic task policies, bounded final-answer revision, evidence scoring, oracle comparison, changed-lines traceability, documentation locale consistency, native approval requests for high-risk actions, enforced autonomous long-task recovery, long-task ledgers, retained project plans, and coding closure checks.
 
 ## What it solves
 
@@ -39,24 +39,73 @@ Runtime delivery-quality plugin for OpenClaw agents. It adds dynamic task polici
 - Ledger rotation and retention are configurable.
 - Project plans are intentionally retained for review/follow-up; users should add `.openclaw/` to `.gitignore` if they do not want to commit them.
 
-## AI Agent installation brief
+## Installation and configuration
 
-When a user gives an AI agent this repository URL and asks it to install Delivery Gate into OpenClaw, the agent should do this autonomously unless the local environment or safety policy requires confirmation:
+This section is written for both humans and AI agents. If a user gives an AI agent this repository URL and asks it to install Delivery Gate into OpenClaw, the agent should follow these steps, perform the safe checks directly, and report verification evidence instead of only giving a plan.
 
-1. **Inspect first**
-   - Confirm OpenClaw is installed and find the active config path.
-   - Read OpenClaw plugin/config docs or schema before changing config.
-   - Inspect current `plugins.entries.delivery-gate` config if it already exists.
+### 1. Inspect the local OpenClaw environment
 
-2. **Install or update the plugin source**
-   - Clone or copy this repository into an OpenClaw plugin directory, commonly:
-     - `~/.openclaw/plugins/delivery-gate`
-   - Run `npm test` in the plugin directory.
-   - Do not commit generated runtime files such as `runs/`, `plans/`, `.openclaw/`, or `node_modules/`.
+Before changing anything:
 
-3. **Enable the plugin in OpenClaw config**
-   - Preserve existing config and merge the entry instead of overwriting unrelated settings.
-   - Configure the plugin under `plugins.entries.delivery-gate`:
+- Confirm OpenClaw is installed.
+- Find the active OpenClaw config file, commonly `~/.openclaw/openclaw.json`.
+- Read the current `plugins.entries.delivery-gate` config if it already exists.
+- Read OpenClaw plugin/config docs or schema when available.
+- Preserve existing config; merge only the Delivery Gate entry.
+
+### 2. Install or update the plugin source
+
+Clone or copy this repository into the user plugin directory:
+
+```bash
+git clone https://github.com/l-jessie/delivery-gate.git ~/.openclaw/plugins/delivery-gate
+cd ~/.openclaw/plugins/delivery-gate
+npm test
+```
+
+If the directory already exists, update it safely instead of overwriting local changes:
+
+```bash
+cd ~/.openclaw/plugins/delivery-gate
+git status --short
+git pull --ff-only
+npm test
+```
+
+Do not commit runtime/generated files such as `runs/`, `plans/`, `.openclaw/`, `node_modules/`, or packed `.tgz` files.
+
+### 3. Enable the OpenClaw plugin entry
+
+The plugin must be configured under `plugins.entries.delivery-gate`. Do not put `delivery-gate` at the root of the config.
+
+Minimum working config:
+
+```jsonc
+{
+  "plugins": {
+    "entries": {
+      "delivery-gate": {
+        "enabled": true,
+        "hooks": {
+          "allowPromptInjection": true,
+          "allowConversationAccess": true
+        },
+        "config": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}
+```
+
+The three critical paths are:
+
+- `plugins.entries.delivery-gate.enabled = true`
+- `plugins.entries.delivery-gate.hooks.allowPromptInjection = true`
+- `plugins.entries.delivery-gate.hooks.allowConversationAccess = true`
+
+Recommended full config baseline:
 
 ```jsonc
 {
@@ -71,20 +120,32 @@ When a user gives an AI agent this repository URL and asks it to install Deliver
         "config": {
           "enabled": true,
           "mode": "revise",
+          "injectPrompt": true,
           "strictTools": true,
+          "midRunReflection": true,
+          "semanticReview": true,
           "longTaskMode": true,
+          "skillHints": true,
+          "implicitPlanFiles": true,
           "projectPlanFiles": true,
           "cleanupPlanOnSuccess": false,
           "persistLedger": true,
           "ledgerPromptMode": "redacted",
+          "maxLedgerBytes": 1000000,
+          "retentionDays": 30,
           "reviewerMode": "rules",
+          "codingStrict": true,
           "approvalMode": "approval",
+          "blockHighRiskTools": true,
           "autonomousRecovery": true,
           "enforceAutonomousRecovery": true,
           "evidenceScoring": true,
           "oracleStrict": true,
           "changedLinesReview": true,
-          "docLocaleConsistency": true
+          "docLocaleConsistency": true,
+          "milestoneReflectionEveryTools": 5,
+          "failureBudget": 3,
+          "maxRevisionAttempts": 1
         }
       }
     }
@@ -92,51 +153,56 @@ When a user gives an AI agent this repository URL and asks it to install Deliver
 }
 ```
 
-4. **Reload and verify**
-   - Restart or reload OpenClaw only when needed by the local config mechanism.
-   - Verify with `openclaw plugins list` that Delivery Gate is enabled and shows the expected version.
-   - Run a low-risk probe: ask an agent to report the injected `<delivery_gate>` block version and task classification.
-   - Run a negative probe when safe: simulate a file/code completion without readback/test evidence and confirm Delivery Gate requests revision or blocks false completion.
+### 4. Reload and verify
 
-5. **Report evidence**
-   - Final reply should include: plugin path, config path changed, version, test output, `openclaw plugins list` evidence, and any remaining risks.
-   - If installation cannot be verified, do not claim success; mark the missing verification explicitly.
+Reload or restart OpenClaw only if required by the local config mechanism. Then verify:
 
-## Recommended config
-
-```jsonc
-{
-  "plugins": {
-    "entries": {
-      "delivery-gate": {
-        "enabled": true,
-        "hooks": {
-          "allowPromptInjection": true,
-          "allowConversationAccess": true
-        },
-        "config": {
-          "enabled": true,
-          "mode": "revise",
-          "strictTools": true,
-          "longTaskMode": true,
-          "projectPlanFiles": true,
-          "cleanupPlanOnSuccess": false,
-          "persistLedger": true,
-          "ledgerPromptMode": "redacted",
-          "reviewerMode": "rules",
-          "approvalMode": "approval",
-          "autonomousRecovery": true,
-          "enforceAutonomousRecovery": true,
-          "evidenceScoring": true,
-          "oracleStrict": true,
-          "changedLinesReview": true,
-          "docLocaleConsistency": true
-        }
-      }
-    }
-  }
-}
+```bash
+openclaw plugins list | grep -i delivery
 ```
+
+Expected evidence:
+
+- Delivery Gate is listed as `enabled`.
+- The plugin path points to `~/.openclaw/plugins/delivery-gate/index.js` or the intended install path.
+- The displayed version matches `package.json` / `openclaw.plugin.json`.
+
+Run two probes:
+
+1. **Positive probe**: ask an agent to report the injected `<delivery_gate>` block version and task classification.
+2. **Negative probe**: safely simulate a file/code completion without readback/test evidence and confirm Delivery Gate requests revision or blocks false completion.
+
+### 5. What the installer must report
+
+A human or AI installer should report:
+
+- Plugin path.
+- Config path changed.
+- Enabled flags and hook permissions.
+- Version.
+- `npm test` result.
+- `openclaw plugins list` result.
+- Probe result.
+- Remaining risks, if any.
+
+If any verification step is missing, do not claim the plugin is installed successfully.
+
+## Key configuration options
+
+| Option | Default | Meaning |
+|---|---:|---|
+| `mode` | `revise` | Request one bounded final-answer revision when a gate fails. `observe` only records. |
+| `strictTools` | `true` | Enable tool-evidence gates. |
+| `longTaskMode` | `true` | Enable long-task planning, milestone reflection, and failure-budget guidance. |
+| `autonomousRecovery` | `true` | Try safe recovery channels before asking the user during long tasks. |
+| `enforceAutonomousRecovery` | `true` | Revise premature user handoff when recovery evidence is missing. |
+| `evidenceScoring` | `true` | Require minimum evidence strength, not just any evidence. |
+| `oracleStrict` | `true` | Require equivalence/source-of-truth evidence when a correctness oracle is named. |
+| `changedLinesReview` | `true` | Require changed-lines traceability for coding diffs. |
+| `docLocaleConsistency` | `true` | Flag README language-boundary drift. |
+| `approvalMode` | `approval` | Use native approval for high-risk actions; `block` hard-blocks. |
+| `persistLedger` | `true` | Persist per-run ledgers. |
+| `ledgerPromptMode` | `redacted` | Prompt persistence mode: `none`, `redacted`, or `full`. |
 
 ## Open-source readiness status
 
@@ -156,7 +222,7 @@ npm test
 
 ## Structure
 
-```
+```text
 delivery-gate/
   index.js                  # Public entry: re-exports helpers and default plugin
   openclaw.plugin.json      # Manifest and config schema
