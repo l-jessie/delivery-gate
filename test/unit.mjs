@@ -10,6 +10,7 @@ import {
   evidenceScore,
   minimumEvidenceScore,
   requiresOracle,
+  hasDocLocaleIssueFromText,
   summarizeApproval,
 } from '../index.js';
 
@@ -41,6 +42,8 @@ assert.equal(readConfig({ oracleStrict: false }).oracleStrict, false);
 assert.equal(readConfig({}).oracleStrict, true);
 assert.equal(readConfig({ changedLinesReview: false }).changedLinesReview, false);
 assert.equal(readConfig({}).changedLinesReview, true);
+assert.equal(readConfig({ docLocaleConsistency: false }).docLocaleConsistency, false);
+assert.equal(readConfig({}).docLocaleConsistency, true);
 
 // prompt classification
 assert.deepEqual(classifyPrompt('修复 Java 接口 bug 并跑测试').taskType, 'coding');
@@ -72,6 +75,8 @@ c = classifyTool('exec', { command: 'git diff && echo changed lines traceable &&
 assert.equal(c.diffEvidence, true);
 assert.equal(c.changedLinesEvidence, true);
 assert.equal(c.oracleEvidence, true);
+c = classifyTool('edit', { path: 'README.md', oldText: '# Title', newText: '# Title\n\n啊... 这是给openclaw的一个交付门禁过度插件。' }, 'Successfully replaced', null);
+assert.equal(c.docLocaleIssue, true);
 
 // redaction
 const secret = 'apiKey: sk-1234567890abcdefABCDEF token="abc.defghijk.lmnopqrst" Authorization: Bearer qwerty1234567890';
@@ -91,6 +96,8 @@ assert.match(shouldRevise('完成了。验证：git diff 已检查。', baseStat
 assert.match(shouldRevise('完成了。验证：git diff 和 changed lines 已检查。', baseState({ taskType:'coding', prompt:'列表需要和导出正确口径同源', write:1, mutating:1, verify:1, diffEvidence:1, changedLinesEvidence:1, testEvidence:1 }), cfg), /oracle comparison/);
 assert.match(shouldRevise('完成了。验证：读回。', baseState({ taskType:'file-artifact', write:1, mutating:1, verify:1, artifactWrite:1 }), cfg), /Evidence score too weak/);
 assert.equal(shouldRevise('完成了。验证：git diff、changed lines、npm test、oracle 对比同源。', baseState({ taskType:'coding', prompt:'列表需要和导出正确口径同源', write:1, mutating:1, verify:1, diffEvidence:1, changedLinesEvidence:1, testEvidence:1, oracleEvidence:1 }), cfg), null);
+assert.match(shouldRevise('已完成。验证：已读回 README.md 顶部：啊... 这是给openclaw的一个交付门禁过度插件。', baseState({ taskType:'file-artifact', write:1, mutating:1, verify:1, docLocaleIssue:1 }), cfg), /locale mismatch/);
+assert.equal(shouldRevise('已完成。验证：README.md uses English slogan, README.zh-CN.md uses Chinese slogan.', baseState({ taskType:'file-artifact', write:1, mutating:1, verify:1, artifactWrite:1, artifactRead:1 }), cfg), null);
 assert.equal(shouldRevise('[blocked] 测试失败，需要依赖服务。', baseState({ errors:3 }), cfg), null);
 assert.match(shouldRevise('遇到问题了，需要你告诉我下一步怎么办。', baseState({ longTask:true }), cfg), /autonomous recovery/);
 assert.equal(shouldRevise('遇到问题了，我已查 memory/wiki、本地源码和官方文档，仍需要你确认业务口径。', baseState({ longTask:true }), cfg), null);
@@ -105,5 +112,6 @@ assert.ok(summary.includes('evidenceScore='));
 assert.equal(requiresOracle('导出正确，列表要和导出口径同源'), true);
 assert.equal(minimumEvidenceScore(baseState({ taskType:'coding', write:1, prompt:'导出正确，列表要和导出口径同源' })), 70);
 assert.ok(evidenceScore(baseState({ verify:1, diffEvidence:1, changedLinesEvidence:1, testEvidence:1, oracleEvidence:1 })) >= 70);
+assert.equal(hasDocLocaleIssueFromText('README.md 顶部：啊... 这是给openclaw的一个交付门禁过度插件。'), true);
 
 console.log('delivery-gate unit matrix ok');

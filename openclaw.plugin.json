@@ -149,6 +149,10 @@
       "changedLinesReview": {
         "type": "boolean",
         "default": true
+      },
+      "docLocaleConsistency": {
+        "type": "boolean",
+        "default": true
       }
     }
   }

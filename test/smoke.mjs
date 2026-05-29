@@ -13,4 +13,5 @@ assert.equal(manifest.configSchema.properties.enforceAutonomousRecovery.default,
 assert.equal(manifest.configSchema.properties.evidenceScoring.default, true);
 assert.equal(manifest.configSchema.properties.oracleStrict.default, true);
 assert.equal(manifest.configSchema.properties.changedLinesReview.default, true);
+assert.equal(manifest.configSchema.properties.docLocaleConsistency.default, true);
 console.log('delivery-gate smoke ok');
